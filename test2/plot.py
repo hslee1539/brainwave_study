@@ -6,7 +6,6 @@ def zeros(maxlen : int):
     for _ in range(maxlen):
         yield 0
 
-
 class Plot:
     def __init__(self, maxlen = 100):
         self.x = deque(maxlen=maxlen)
@@ -21,8 +20,11 @@ class Plot:
         pass
 
     def __enter__(self):
-        self.fig = plt.figure(figsize=[1,1])
-        self.subplot1 = self.fig.add_subplot(111)
+        self.fig = plt.figure(figsize=[6,6])
+        self.fig : plt.Figure
+        self.subplots = []
+        for i in range(6 * 6):
+            self.subplots.append(self.fig.add_subplot(6,6, i + 1))
 
         return self
 
@@ -38,10 +40,12 @@ class Plot:
     
     def draw(self):
         self.subplot1 : axes.Axes
-        self.subplot1.clear()
-        for ys_item in self.ys:
-            ys_item : deque
-            self.subplot1.plot(self.x, ys_item)
+        #self.subplot1.clear()
+        for subplot, y in zip(self.subplots, self.ys):
+            subplot : axes.Axes
+            subplot.clear()
+            subplot.plot(self.x, y)
+            
         plt.draw()
         plt.pause(0.0001)
 
@@ -50,11 +54,13 @@ class Plot:
 
 if __name__ == "__main__":
     import connection
-    with Plot() as plot:
-        with connection.Connection(port="COM7") as con:
+    with Plot(10) as plot:
+        with connection.Connection(port="COM3") as con:
             while True:
                 tmp = con.read()
                 if(len(tmp) == 36):
                     plot.push(tmp)
                     plot.draw()
+                else:
+                    print("wow")
         
